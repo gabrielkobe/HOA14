@@ -1,0 +1,20 @@
+
+  -  name:  Installation of Nova & Prerequisites
+     apt:
+       name:
+         - nova-api
+         - nova-conductor
+         - nova-novncproxy
+         - nova-scheduler
+
+  -  name:  Configuration of Nova
+     template:
+       src:  roles/control_nova/templates/nova.conf.j2
+       dest:  /etc/nova/nova.conf
+
+  -  name:  Shell Configuration of Nova
+     shell: |
+       sudo nova-manage api_db sync
+       sudo nova-manage cell_v2 map_cell0
+       sudo nova-manage db sync
+       sudo nova-manage cell_v2 list_cells

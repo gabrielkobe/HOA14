@@ -1,0 +1,44 @@
+  - name:  Install Keystone & Prerequisites
+    apt:
+      name:
+        -  keystone
+        -  apache2
+        -  libapache2-mod-wsgi-py3
+
+  -  name:  Configure configuration of Keystone
+     become:  true
+     template:
+       src: roles/control_keystone/templates/keystone.conf.j2
+       dest: /etc/keystone/keystone.conf
+
+  -  name:  Populating the Identity Service Database
+     shell: |
+       sudo keystone-manage db_sync
+
+  -  name:  Initialization of the Fernet Key
+     shell: |
+       keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
+       keystone-manage credential_setup --keystone-user keystone --keystone-group keystone
+
+  -  name:  Configuring the Apache (HTTP) Server
+     lineinfile:
+       dest:  /etc/apache2/apache2.conf
+       line:  'ServerName controller'
+       state:  present
+       backup:  yes
+
+  -  name: Configure Administrative Account Environmental Variables
+     shell: |
+       export OS_USERNAME=admin
+       export OS_PASSWORD=ADMIN_PASS
+       export OS_PROJECT_NAME=admin
+       export OS_USER_DOMANI_NAME=Default
+       export OS_PROJECT_DOMAIN_NAME=Default
+       export OS_AUTH_URL=http://controller:5000/v3
+       export OS_IDENTITY_API_VERSION=3
+
+  -  name: Restart Apache2 System
+     systemd:
+       name: apache2
+       state: restarted
+       enabled: true

@@ -1,0 +1,13 @@
+
+  -  name: Install Glance
+     apt:
+       name:  glance
+
+  -  name: Configuration of Glance
+     template:
+       src: roles/control_glance/templates/glance-api.conf.j2
+       dest:  /etc/glance/glance-api.conf
+
+  -  name: Population of Image Service Database
+     shell: |
+       sudo glance-manage db_sync
